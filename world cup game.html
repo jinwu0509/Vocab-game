@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>世界盃英語大賽 World Cup English Challenge</title>
+<style>
+  :root{
+    --pitch-dark:#1b5e3f;
+    --pitch-light:#21724a;
+    --line:#eef3ea;
+    --gold:#e8b33d;
+    --coral:#e2543c;
+    --ink:#142019;
+    --paper:#fbf8ee;
+    --paper-dim:#f1ecd9;
+    --shadow:rgba(0,0,0,.35);
+    --sky:#3aa0c9;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:"Segoe UI","PingFang TC","Microsoft JhengHei",Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      repeating-linear-gradient(90deg, var(--pitch-dark) 0 60px, var(--pitch-light) 60px 120px);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .headline{
+    font-family:"Arial Black","Microsoft JhengHei",Impact,Helvetica,Arial,sans-serif;
+    letter-spacing:.5px;
+  }
+  #app{
+    max-width:760px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ---------- pitch markings ---------- */
+  .pitch-marks{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 78px, transparent 80px),
+      none;
+  }
+  .pitch-marks::before{
+    content:"";
+    position:absolute; top:50%; left:50%; width:160px; height:160px;
+    border:3px solid rgba(255,255,255,.18);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+  }
+  .pitch-marks::after{
+    content:"";
+    position:absolute; top:0; left:50%; width:0; height:100%;
+    border-left:3px solid rgba(255,255,255,.12);
+    transform:translateX(-50%);
+  }
+
+  /* ---------- scoreboard ---------- */
+  #scoreboard{
+    position:sticky; top:0; z-index:5;
+    background:linear-gradient(180deg, var(--ink), #0c140f);
+    color:var(--line);
+    padding:10px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 4px 14px var(--shadow);
+    font-variant-numeric: tabular-nums;
+  }
+  #scoreboard .side{display:flex; align-items:center; gap:8px; min-width:84px;}
+  #scoreboard .side.you{justify-content:flex-start;}
+  #scoreboard .side.rival{justify-content:flex-end;}
+  #scoreboard .num{
+    font-family:"Arial Black",Impact,sans-serif;
+    font-size:22px;
+    color:var(--gold);
+    min-width:24px; text-align:center;
+  }
+  #scoreboard .mid{
+    text-align:center; flex:1;
+    font-size:12px; opacity:.85;
+  }
+  #scoreboard .mid .roundname{font-weight:700; font-size:13px; color:#fff;}
+  #scoreboard .flag{font-size:18px;}
+  #combo-badge{
+    position:sticky; top:48px; z-index:4;
+    text-align:center; font-size:12px; color:var(--gold);
+    height:20px; font-weight:700;
+    transition:opacity .2s;
+  }
+
+  /* ---------- main stage ---------- */
+  #stage{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px 16px 60px; position:relative; z-index:1;
+  }
+  .card{
+    background:var(--paper);
+    border-radius:18px;
+    box-shadow:0 14px 32px var(--shadow);
+    padding:28px 24px;
+    width:100%;
+    max-width:640px;
+    position:relative;
+  }
+  .eyebrow{
+    font-size:12px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--pitch-dark); font-weight:700; margin-bottom:6px;
+  }
+  h1.headline{font-size:clamp(26px,6vw,38px); margin:4px 0 6px; color:var(--ink);}
+  h2.headline{font-size:clamp(20px,4.6vw,26px); margin:0 0 10px; color:var(--ink);}
+  p.lead{font-size:15px; line-height:1.7; color:#3a4038; margin:0 0 18px;}
+
+  .btn{
+    font-family:inherit; font-weight:700; font-size:16px;
+    border:none; border-radius:999px; cursor:pointer;
+    padding:14px 28px;
+    background:var(--gold); color:var(--ink);
+    box-shadow:0 6px 0 #b5862a, 0 10px 18px var(--shadow);
+    transition:transform .08s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn:active{transform:translateY(2px); box-shadow:0 2px 0 #b5862a;}
+  .btn.secondary{background:transparent; color:var(--paper); border:2px solid var(--paper); box-shadow:none;}
+  .btn.block{width:100%; display:block; margin-top:18px;}
+  .btn-row{display:flex; gap:12px; flex-wrap:wrap; justify-content:center;}
+
+  /* team picker */
+  .teams{display:flex; gap:14px; justify-content:center; margin:18px 0 8px; flex-wrap:wrap;}
+  .team-opt{
+    border:3px solid transparent; border-radius:14px; padding:12px 16px;
+    background:var(--paper-dim); cursor:pointer; text-align:center; min-width:88px;
+    font-size:13px; font-weight:700; transition:.15s;
+  }
+  .team-opt .flag{font-size:28px; display:block; margin-bottom:4px;}
+  .team-opt.selected{border-color:var(--pitch-dark); background:#e7f2e9;}
+
+  /* round intro */
+  .bracket{display:flex; justify-content:center; gap:6px; margin:18px 0; flex-wrap:wrap;}
+  .bracket .step{
+    font-size:11px; padding:6px 10px; border-radius:8px; background:var(--paper-dim);
+    color:#666; font-weight:700;
+  }
+  .bracket .step.active{background:var(--pitch-dark); color:#fff;}
+  .bracket .step.done{background:var(--gold); color:var(--ink);}
+
+  /* question */
+  .qprogress{font-size:13px; color:#6b7363; margin-bottom:4px; font-weight:700;}
+  .qtext{font-size:18px; line-height:1.6; margin:6px 0 20px; color:var(--ink);}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left; background:#fff; border:2px solid #ddd6bd; border-radius:12px;
+    padding:14px 16px; font-size:15px; cursor:pointer; font-family:inherit;
+    display:flex; gap:10px; align-items:center; transition:.12s;
+  }
+  .opt:hover{border-color:var(--pitch-dark);}
+  .opt .letter{
+    width:26px; height:26px; border-radius:50%; background:var(--paper-dim);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex:none;
+  }
+  .opt.correct{background:#e4f5e7; border-color:#3f9a57;}
+  .opt.wrong{background:#fbe6e2; border-color:var(--coral);}
+  .opt.disabled{pointer-events:none; opacity:.55;}
+  .opt.correct .letter{background:#3f9a57; color:#fff;}
+  .opt.wrong .letter{background:var(--coral); color:#fff;}
+
+  .feedback{
+    margin-top:14px; font-weight:700; font-size:15px; min-height:22px;
+  }
+  .feedback.good{color:#2f7d45;}
+  .feedback.bad{color:var(--coral);}
+
+  /* pitch + ball animation */
+  .pitch-anim{
+    position:relative; height:84px; margin:-10px auto 14px; width:220px;
+  }
+  .goal{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:120px; height:48px; border:5px solid #fff; border-bottom:none;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.18) 0 4px, transparent 4px 8px);
+    border-radius:4px 4px 0 0;
+  }
+  .ball{
+    position:absolute; bottom:0; left:50%; transform:translate(-50%,0);
+    font-size:30px; transition:transform .55s cubic-bezier(.3,1.4,.4,1), opacity .4s;
+  }
+  .ball.kick-good{transform:translate(-50%,-78px) scale(.7);}
+  .ball.kick-bad{animation:wobble .5s ease;}
+  @keyframes wobble{
+    0%{transform:translate(-50%,0) rotate(0);}
+    30%{transform:translate(-65%,-14px) rotate(-25deg);}
+    60%{transform:translate(-35%,-4px) rotate(20deg);}
+    100%{transform:translate(-50%,0) rotate(0);}
+  }
+  .net-flash{
+    position:absolute; inset:0; opacity:0; background:rgba(255,255,255,.5);
+    border-radius:4px 4px 0 0;
+  }
+  .net-flash.on{opacity:1; transition:opacity .15s; }
+
+  .goal-banner, .miss-banner{
+    position:absolute; top:6px; left:50%; transform:translate(-50%,-8px) scale(.6);
+    font-family:"Arial Black",Impact,sans-serif; font-size:22px; opacity:0;
+    letter-spacing:1px;
+  }
+  .goal-banner{color:var(--gold); text-shadow:0 2px 0 #00000055;}
+  .miss-banner{color:var(--coral);}
+  .goal-banner.show, .miss-banner.show{
+    opacity:1; transform:translate(-50%,-26px) scale(1);
+    transition:transform .35s cubic-bezier(.3,1.6,.4,1), opacity .25s;
+  }
+
+  /* passage card */
+  .passage{
+    background:#fff; border-radius:12px; padding:18px; font-size:14.5px; line-height:1.85;
+    max-height:300px; overflow-y:auto; border:1px solid #e3dcc4; margin-bottom:16px;
+  }
+  .passage h3{margin:0 0 8px; font-size:16px;}
+  .passage p{margin:0 0 10px;}
+
+  /* round result */
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0;}
+  .stat{background:var(--paper-dim); border-radius:12px; padding:14px; text-align:center;}
+  .stat .v{font-size:22px; font-weight:800; color:var(--pitch-dark); font-family:"Arial Black",sans-serif;}
+  .stat .l{font-size:12px; color:#6b6b5e; margin-top:2px;}
+
+  /* final trophy */
+  .trophy{font-size:64px; text-align:center; margin:6px 0 8px; animation:pop .6s ease;}
+  @keyframes pop{0%{transform:scale(.4); opacity:0;}60%{transform:scale(1.15);}100%{transform:scale(1); opacity:1;}}
+  .tier{text-align:center; font-size:20px; font-weight:800; margin-bottom:4px;}
+  .tier-sub{text-align:center; font-size:13px; color:#6b6b5e; margin-bottom:18px;}
+
+  details.review{background:var(--paper-dim); border-radius:10px; margin-top:8px; padding:10px 14px;}
+  details.review summary{cursor:pointer; font-weight:700; font-size:14px;}
+  .review-item{font-size:13.5px; margin:10px 0; padding-top:8px; border-top:1px dashed #ccc7ab;}
+  .review-item .q{font-weight:700; margin-bottom:4px;}
+  .review-item .ans{color:#2f7d45; font-weight:700;}
+  .review-item .your{color:var(--coral);}
+
+  #sound-toggle{
+    position:fixed; bottom:16px; right:16px; z-index:6;
+    background:var(--ink); color:#fff; border:none; border-radius:50%;
+    width:44px; height:44px; font-size:18px; cursor:pointer; box-shadow:0 4px 10px var(--shadow);
+  }
+
+  .confetti{position:fixed; top:-10px; width:8px; height:14px; z-index:8; pointer-events:none; opacity:.9;}
+
+  @media (max-width:420px){
+    .card{padding:20px 16px;}
+    .stat-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="pitch-marks"></div>
+<div id="app">
+  <div id="scoreboard">
+    <div class="side you"><span class="flag" id="flag-you">🏳️</span><span class="num" id="score-you">0</span></div>
+    <div class="mid"><div class="roundname" id="round-name">世界盃英語大賽</div><div id="round-sub">World Cup English Challenge</div></div>
+    <div class="side rival"><span class="num" id="score-rival">0</span><span class="flag">🤖</span></div>
+  </div>
+  <div id="combo-badge"></div>
+  <div id="stage"></div>
+</div>
+<button id="sound-toggle" title="開關音效">🔊</button>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===================== DATA ===================== */
+
+  const FOOTBALL_TERMS = [
+    ["goalkeeper","守門員"], ["defender","後衛"], ["midfielder","中場"], ["forward","前鋒"],
+    ["referee","裁判"], ["pass","傳球"], ["shoot","射門"], ["dribble","盤球；帶球"]
+  ];
+
+  const VOCAB_QUESTIONS = [
+    { q:"Football is a very ____ sport. People all over the world love to play and watch it.",
+      answer:"popular", distractors:["national","memorable","exciting"] },
+    { q:"The World Cup is a big international ____ that happens every four years.",
+      answer:"event", distractors:["jersey","ticket","trip"] },
+    { q:"Three countries will ____ the 2026 World Cup together.",
+      answer:"host", distractors:["expect","broadcast","prepare"] },
+    { q:"This football ____ has 48 teams from around the world.",
+      answer:"tournament", distractors:["jersey","trip","screen"] },
+    { q:"Each country sends its best players to join the ____ team.",
+      answer:"national", distractors:["final","memorable","popular"] },
+    { q:"FIFA ____ millions of fans to watch the games this summer.",
+      answer:"expects", distractors:["prepares","hosts","broadcasts"] },
+    { q:"If you can't go to the stadium, you can watch the ____ on TV.",
+      answer:"broadcast", distractors:["festival","jersey","celebration"] },
+    { q:"The city will ____ a big fan festival during the World Cup.",
+      answer:"hold", distractors:["expect","prepare","broadcast"] },
+    { q:"There is a fan ____ with games, music, and food near the stadium.",
+      answer:"festival", distractors:["tournament","ticket","trip"] },
+    { q:"Everyone is excited about the ____ \u2014 it's the last and most important match.",
+      answer:"final", distractors:["event","jersey","celebration"] },
+    { q:"The players will never forget winning the World Cup. It was a truly ____ moment.",
+      answer:"memorable", distractors:["popular","exciting","national"] },
+    { q:"Teams need to ____ for months before the World Cup begins.",
+      answer:"prepare", distractors:["expect","broadcast","host"] },
+    { q:"Fans like to wear their team's ____ to show support.",
+      answer:"jersey", distractors:["ticket","screen","trip"] },
+    { q:"The matches are very ____ because anything can happen.",
+      answer:"exciting", distractors:["national","memorable","popular"] },
+    { q:"You can feel the ____ in the city when the World Cup starts.",
+      answer:"excitement", distractors:["celebration","ticket","trip"] }
+  ];
+
+  const GRAMMAR_QUESTIONS = [
+    { q:"A: Do you think Argentina will win this year? B: No, I don't think they ____ win. Brazil looks much stronger.",
+      answer:"will", distractors:["won't","don't","isn't"] },
+    { q:"Look at the official schedule! The final ____ start at exactly 3 p.m. on Sunday.",
+      answer:"is going to", distractors:["will","was going to","would"] },
+    { q:"____ you going to buy a ticket for the final, or are you just going to watch it on TV?",
+      answer:"Are", distractors:["Will","Do","Have"] },
+    { q:"____ they going to hold the festival even if it rains?",
+      answer:"Are", distractors:["Will","Do","Have"] },
+    { q:"He says he ____ never miss a World Cup match, no matter how busy he is.",
+      answer:"will", distractors:["is going to","going to","is"] },
+    { q:"Of all the players on the team, Messi is ____ skilled.",
+      answer:"the most", distractors:["more","most","very"] },
+    { q:"This year's final was ____ than last year's \u2014 the score was almost the same until the last minute.",
+      answer:"more exciting", distractors:["more excited","excited","most exciting"] },
+    { q:"The weather during the tournament is getting ____ and ____ every day.",
+      answer:"hotter / hotter", distractors:["hot / hot","more hot / more hot","the hottest / the hottest"] },
+    { q:"Health experts say regular exercise is ____ important than people think.",
+      answer:"far more", distractors:["much","very more","more very"] },
+    { q:"The more international stars join the tournament, ____ exciting it becomes.",
+      answer:"the more", distractors:["more","much more","the most"] }
+  ];
+
+  const PASSAGE_HTML = `
+    <h3>The 2026 FIFA World Cup 二〇二六年世界盃足球賽</h3>
+    <p>Football is the world's most popular sport, and the FIFA World Cup is its biggest event. The World Cup happens every four years, and fans everywhere love to watch it. The 2026 World Cup is very special. For the first time, three countries are hosting it together: the United States, Canada, and Mexico. Together, they are preparing 16 host cities for the games.</p>
+    <p>This World Cup also has more teams than before. In the past, only 32 national teams played in the tournament. Now, 48 teams are taking part, so there are 104 matches in total. That's more matches than any past World Cup!</p>
+    <p>All over the world, football fans are getting ready for the big event. FIFA expects millions of people to watch the World Cup, in the stadiums, on TV, or online.</p>
+    <p>To make the event even more fun, FIFA also holds FIFA Fan Festivals in the host cities. These festivals are free, with huge screens, live music, and other activities.</p>
+    <p>At the final match, fans will see something new, too: a halftime show, just like the famous Super Bowl. It will make the final even more memorable than past World Cup finals.</p>
+  `;
+
+  const READING_QUESTIONS = [
+    { q:"How many countries are hosting the 2026 World Cup together?",
+      answer:"Three", distractors:["Two","Four","One"] },
+    { q:"Which three countries are hosting the 2026 World Cup?",
+      answer:"the United States, Canada, and Mexico",
+      distractors:["Brazil, Argentina, and Chile","Germany, France, and Italy","Japan, South Korea, and China"] },
+    { q:"How many national teams are playing in the 2026 World Cup?",
+      answer:"48", distractors:["32","64","96"] },
+    { q:"What can fans enjoy at FIFA Fan Festivals?",
+      answer:"Huge screens and live music",
+      distractors:["Watching real matches as players","Buying discount tickets","Meeting famous singers"] },
+    { q:"What new thing will happen at the final match?",
+      answer:"A halftime show", distractors:["A new World Cup trophy","A longer match time","A new stadium"] }
+  ];
+
+  const TEAMS = [
+    {flag:"🇺🇸", name:"USA"}, {flag:"🇨🇦", name:"Canada"},
+    {flag:"🇲🇽", name:"Mexico"}, {flag:"🇹🇼", name:"Taiwan"}
+  ];
+
+  /* ===================== HELPERS ===================== */
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function buildRound1(){
+    return shuffle(FOOTBALL_TERMS).map(([word,meaning])=>{
+      const others = FOOTBALL_TERMS.filter(t=>t[0]!==word).map(t=>t[1]);
+      const distractors = shuffle(others).slice(0,3);
+      return { q:`"${word}" 的中文意思是？`, answer:meaning, options: shuffle([meaning,...distractors]) };
+    });
+  }
+  function fromBank(bank, n){
+    return shuffle(bank).slice(0,n).map(item=>({
+      q:item.q, answer:item.answer, options: shuffle([item.answer, ...item.distractors])
+    }));
+  }
+  function buildShootout(){
+    const pool = [...VOCAB_QUESTIONS, ...GRAMMAR_QUESTIONS];
+    return fromBank(pool, 5);
+  }
+
+  function newRounds(){
+    return [
+      { key:"r1", label:"熱身賽", sub:"足球位置與動作 Warm-Up", icon:"⚽", passage:false,
+        questions: buildRound1() },
+      { key:"r2", label:"16強", sub:"字彙挑戰 Vocabulary", icon:"📘", passage:false,
+        questions: fromBank(VOCAB_QUESTIONS, VOCAB_QUESTIONS.length) },
+      { key:"r3", label:"8強", sub:"文法挑戰 Grammar", icon:"🧠", passage:false,
+        questions: fromBank(GRAMMAR_QUESTIONS, GRAMMAR_QUESTIONS.length) },
+      { key:"r4", label:"4強", sub:"閱讀理解 Reading", icon:"📖", passage:true,
+        questions: fromBank(READING_QUESTIONS, READING_QUESTIONS.length) },
+      { key:"r5", label:"冠軍賽", sub:"PK大戰 Penalty Shootout", icon:"🏆", passage:false,
+        questions: buildShootout() }
+    ];
+  }
+
+  /* ===================== AUDIO ===================== */
+  let soundOn = true;
+  let actx = null;
+  function beep(freq, dur, type){
+    if(!soundOn) return;
+    try{
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      const o = actx.createOscillator(); const g = actx.createGain();
+      o.type = type||"sine"; o.frequency.value = freq;
+      g.gain.value = .06;
+      o.connect(g); g.connect(actx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime+dur);
+      o.stop(actx.currentTime+dur);
+    }catch(e){}
+  }
+  function sfxGoal(){ beep(660,.12,"triangle"); setTimeout(()=>beep(880,.18,"triangle"),90); }
+  function sfxMiss(){ beep(160,.25,"sawtooth"); }
+  function sfxWhistle(){ beep(1200,.35,"square"); }
+
+  document.getElementById("sound-toggle").addEventListener("click", function(){
+    soundOn = !soundOn;
+    this.textContent = soundOn ? "🔊" : "🔇";
+  });
+
+  /* ===================== GAME STATE ===================== */
+
+  const state = {
+    team: TEAMS[0],
+    rounds: [],
+    roundIdx: 0,
+    qIdx: 0,
+    you: 0, rival: 0,
+    combo: 0, bestCombo: 0,
+    points: 0,
+    wrong: [],
+    roundCorrect: 0
+  };
+
+  const stage = document.getElementById("stage");
+
+  function setScoreboard(roundLabel, roundSub){
+    document.getElementById("round-name").textContent = roundLabel || "世界盃英語大賽";
+    document.getElementById("round-sub").textContent = roundSub || "World Cup English Challenge";
+    document.getElementById("score-you").textContent = state.you;
+    document.getElementById("score-rival").textContent = state.rival;
+    document.getElementById("flag-you").textContent = state.team.flag;
+  }
+  function setCombo(){
+    const el = document.getElementById("combo-badge");
+    if(state.combo>=2){ el.textContent = "🔥 連續答對 x"+state.combo+"！"; el.style.opacity=1; }
+    else { el.style.opacity=0; }
+  }
+
+  /* ---------- screen: start ---------- */
+  function screenStart(){
+    setScoreboard();
+    stage.innerHTML = `
+      <div class="card">
+        <div class="eyebrow">FOOTBALL × ENGLISH REVIEW GAME</div>
+        <h1 class="headline">⚽ 世界盃英語大賽</h1>
+        <p class="lead">World Cup English Challenge — 從熱身賽踢到冠軍賽，用英文單字、文法和閱讀理解贏得比賽！每答對一題＝進一球，答錯一題＝對手追平一分，看看你能不能捧起獎盃 🏆</p>
+        <div class="eyebrow">選擇你的代表隊 Choose Your Team</div>
+        <div class="teams" id="team-picker"></div>
+        <button class="btn block" id="start-btn">開始比賽 Kick Off</button>
+      </div>
+    `;
+    const picker = document.getElementById("team-picker");
+    TEAMS.forEach((t,i)=>{
+      const d = document.createElement("div");
+      d.className = "team-opt"+(i===0?" selected":"");
+      d.innerHTML = `<span class="flag">${t.flag}</span>${t.name}`;
+      d.addEventListener("click", ()=>{
+        document.querySelectorAll(".team-opt").forEach(x=>x.classList.remove("selected"));
+        d.classList.add("selected");
+        state.team = t;
+      });
+      picker.appendChild(d);
+    });
+    document.getElementById("start-btn").addEventListener("click", ()=>{
+      state.rounds = newRounds();
+      state.roundIdx = 0;
+      sfxWhistle();
+      screenRoundIntro();
+    });
+  }
+
+  /* ---------- screen: round intro ---------- */
+  function screenRoundIntro(){
+    const r = state.rounds[state.roundIdx];
+    state.qIdx = 0; state.roundCorrect = 0; state.combo = 0; setCombo();
+    setScoreboard(r.label, r.sub);
+
+    const bracket = state.rounds.map((rr,i)=>{
+      let cls = "step";
+      if(i < state.roundIdx) cls += " done";
+      else if(i === state.roundIdx) cls += " active";
+      return `<span class="${cls}">${rr.label}</span>`;
+    }).join("");
+
+    stage.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <div class="bracket">${bracket}</div>
+        <div style="font-size:48px;">${r.icon}</div>
+        <h2 class="headline">${r.label}　${r.sub}</h2>
+        <p class="lead">共 ${r.questions.length} 題，答對得分、踢進一球！準備好了嗎？</p>
+        ${r.passage ? `<button class="btn block" id="read-btn">先讀短文 Read the Passage</button>` : `<button class="btn block" id="go-btn">開始作答 Let's Go</button>`}
+      </div>
+    `;
+    if(r.passage){
+      document.getElementById("read-btn").addEventListener("click", screenPassage);
+    } else {
+      document.getElementById("go-btn").addEventListener("click", ()=>screenQuestion());
+    }
+  }
+
+  function screenPassage(){
+    const r = state.rounds[state.roundIdx];
+    stage.innerHTML = `
+      <div class="card">
+        <div class="eyebrow">請先閱讀短文 Read First</div>
+        <div class="passage">${PASSAGE_HTML}</div>
+        <button class="btn block" id="go-btn">我準備好了，開始作答！</button>
+      </div>
+    `;
+    document.getElementById("go-btn").addEventListener("click", ()=>screenQuestion());
+  }
+
+  /* ---------- screen: question ---------- */
+  function screenQuestion(){
+    const r = state.rounds[state.roundIdx];
+    const q = r.questions[state.qIdx];
+    setScoreboard(r.label, r.sub);
+    setCombo();
+
+    const letters = ["A","B","C","D"];
+    stage.innerHTML = `
+      <div class="card">
+        <div class="qprogress">第 ${state.qIdx+1} / ${r.questions.length} 題</div>
+        <div class="pitch-anim">
+          <div class="goal"><div class="net-flash" id="net-flash"></div></div>
+          <div class="goal-banner" id="goal-banner">GOAL!</div>
+          <div class="miss-banner" id="miss-banner">MISS!</div>
+          <div class="ball" id="ball">⚽</div>
+        </div>
+        <div class="qtext">${q.q}</div>
+        <div class="options" id="opts"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+    `;
+    const optsEl = document.getElementById("opts");
+    q.options.forEach((opt,i)=>{
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.dataset.value = opt;
+      b.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+      b.addEventListener("click", ()=>answer(opt, b, q));
+      optsEl.appendChild(b);
+    });
+  }
+
+  function answer(opt, btnEl, q){
+    document.querySelectorAll(".opt").forEach(o=>o.classList.add("disabled"));
+    const correct = opt === q.answer;
+    const fb = document.getElementById("feedback");
+    const ball = document.getElementById("ball");
+    const netFlash = document.getElementById("net-flash");
+    const goalBanner = document.getElementById("goal-banner");
+    const missBanner = document.getElementById("miss-banner");
+
+    if(correct){
+      btnEl.classList.add("correct");
+      state.you++; state.combo++; state.roundCorrect++;
+      state.bestCombo = Math.max(state.bestCombo, state.combo);
+      state.points += 10 * Math.min(state.combo,5);
+      ball.classList.add("kick-good");
+      setTimeout(()=>{ netFlash.classList.add("on"); goalBanner.classList.add("show"); }, 480);
+      setTimeout(()=>{ netFlash.classList.remove("on"); }, 700);
+      fb.textContent = "✅ 太棒了！踢進一球！"; fb.className = "feedback good";
+      sfxGoal();
+    } else {
+      btnEl.classList.add("wrong");
+      document.querySelectorAll(".opt").forEach(o=>{
+        if(o.dataset.value===q.answer) o.classList.add("correct");
+      });
+      state.rival++; state.combo = 0;
+      state.wrong.push({ q:q.q, answer:q.answer, your:opt, round: state.rounds[state.roundIdx].label });
+      ball.classList.add("kick-bad");
+      missBanner.classList.add("show");
+      fb.innerHTML = `❌ 可惜，被擋下來了！正確答案是 <b>${q.answer}</b>`; fb.className = "feedback bad";
+      sfxMiss();
+    }
+    setScoreboard(state.rounds[state.roundIdx].label, state.rounds[state.roundIdx].sub);
+    setCombo();
+
+    setTimeout(()=>{
+      state.qIdx++;
+      const r = state.rounds[state.roundIdx];
+      if(state.qIdx < r.questions.length){
+        screenQuestion();
+      } else {
+        screenRoundResult();
+      }
+    }, 1350);
+  }
+
+  /* ---------- screen: round result ---------- */
+  function screenRoundResult(){
+    const r = state.rounds[state.roundIdx];
+    const total = r.questions.length;
+    const acc = Math.round(state.roundCorrect/total*100);
+    const isLast = state.roundIdx === state.rounds.length - 1;
+
+    stage.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <div class="eyebrow">${r.label} 結束</div>
+        <h2 class="headline">${acc>=80 ? "🌟 表現精彩！" : acc>=50 ? "👍 穩穩晉級！" : "💪 繼續加油！"}</h2>
+        <div class="stat-grid">
+          <div class="stat"><div class="v">${state.roundCorrect}/${total}</div><div class="l">本輪答對</div></div>
+          <div class="stat"><div class="v">${acc}%</div><div class="l">本輪準確率</div></div>
+        </div>
+        <button class="btn block" id="next-btn">${isLast ? "查看最終結果 🏆" : "晉級下一輪 ▶"}</button>
+      </div>
+    `;
+    document.getElementById("next-btn").addEventListener("click", ()=>{
+      if(isLast){ screenFinal(); }
+      else { state.roundIdx++; sfxWhistle(); screenRoundIntro(); }
+    });
+  }
+
+  /* ---------- screen: final ---------- */
+  function launchConfetti(){
+    const colors = ["#e8b33d","#e2543c","#3aa0c9","#fff"];
+    for(let i=0;i<26;i++){
+      const c = document.createElement("div");
+      c.className = "confetti";
+      c.style.left = Math.random()*100+"vw";
+      c.style.background = colors[i%colors.length];
+      c.style.transform = `rotate(${Math.random()*360}deg)`;
+      c.style.animation = `fall ${1.6+Math.random()*1.2}s linear forwards`;
+      c.style.animationDelay = (Math.random()*.4)+"s";
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(), 3200);
+    }
+  }
+  const styleTag = document.createElement("style");
+  styleTag.textContent = `@keyframes fall{ to{ transform:translateY(100vh) rotate(360deg); opacity:.4; } }`;
+  document.head.appendChild(styleTag);
+
+  function screenFinal(){
+    const totalQ = state.you + state.rival;
+    const acc = totalQ ? Math.round(state.you/totalQ*100) : 0;
+    let tier, tierSub, trophy;
+    if(acc>=90){ trophy="🏆"; tier="世界盃冠軍！Champion!"; tierSub="幾乎零失誤，太強了！"; }
+    else if(acc>=75){ trophy="🥈"; tier="亞軍 Runner-Up"; tierSub="非常接近冠軍，再練一下就奪冠！"; }
+    else if(acc>=60){ trophy="🥉"; tier="四強殿軍 Semi-Finalist"; tierSub="基礎很不錯，再加強一些細節！"; }
+    else { trophy="💪"; tier="再接再厲 Keep Practicing"; tierSub="回去複習講義，下次一定能踢進更多球！"; }
+
+    setScoreboard("最終比賽結果", "Final Result");
+    launchConfetti();
+
+    const reviewHtml = state.wrong.length
+      ? state.wrong.map(w=>`
+          <div class="review-item">
+            <div class="q">${w.round}：${w.q}</div>
+            <div>你的答案：<span class="your">${w.your}</span>　正確答案：<span class="ans">${w.answer}</span></div>
+          </div>`).join("")
+      : `<div class="review-item">全部答對，沒有錯題！太厲害了 🎉</div>`;
+
+    stage.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <div class="trophy">${trophy}</div>
+        <div class="tier">${tier}</div>
+        <div class="tier-sub">${tierSub}</div>
+        <div class="stat-grid">
+          <div class="stat"><div class="v">${state.you} : ${state.rival}</div><div class="l">最終比分</div></div>
+          <div class="stat"><div class="v">${acc}%</div><div class="l">總準確率</div></div>
+          <div class="stat"><div class="v">${state.bestCombo}</div><div class="l">最高連續答對</div></div>
+          <div class="stat"><div class="v">${state.points}</div><div class="l">總積分</div></div>
+        </div>
+        <details class="review">
+          <summary>📋 錯題回顧 Wrong Answer Review（${state.wrong.length} 題）</summary>
+          ${reviewHtml}
+        </details>
+        <button class="btn block" id="restart-btn">🔄 重新挑戰 Play Again</button>
+      </div>
+    `;
+    document.getElementById("restart-btn").addEventListener("click", ()=>{
+      state.roundIdx=0; state.you=0; state.rival=0; state.combo=0; state.bestCombo=0;
+      state.points=0; state.wrong=[];
+      screenStart();
+    });
+  }
+
+  /* ===================== INIT ===================== */
+  screenStart();
+
+})();
+</script>
+</body>
+</html>
