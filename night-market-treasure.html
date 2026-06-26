@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夜市文法尋寶 · 第一二冊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#161B33;
+    --navy2:#232A4D;
+    --navy3:#0b0d1c;
+    --red:#E0483F;
+    --red-dark:#B5332C;
+    --gold:#F4B740;
+    --teal:#2FB6A6;
+    --cream:#FBF3E1;
+    --charcoal:#2B2B2B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #34406e 0%, transparent 60%),
+      linear-gradient(180deg, #232A4D 0%, #161B33 45%, #0b0d1c 100%);
+    font-family:'Noto Sans TC', sans-serif;
+    color:var(--cream);
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    width:100%;
+    max-width:560px;
+    min-height:100vh;
+    position:relative;
+    padding:0 0 28px;
+    overflow:hidden;
+  }
+  .heading-font{font-family:'Baloo 2','Noto Sans TC',sans-serif;}
+
+  /* ---------- generic screen ---------- */
+  .screen{ display:none; padding:6px 22px 0; animation:fadeIn .35s ease; }
+  .screen.active{ display:block; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---------- start screen ---------- */
+  .market-emoji{ font-size:54px; text-align:center; margin:8px 0 2px; filter:drop-shadow(0 4px 10px rgba(0,0,0,.4)); }
+  h1.title{
+    font-family:'Baloo 2','Noto Sans TC',sans-serif;
+    font-weight:800; font-size:30px; text-align:center; margin:6px 0 2px;
+    color:var(--gold); letter-spacing:1px;
+    text-shadow:0 2px 0 rgba(0,0,0,.35);
+  }
+  p.subtitle{ text-align:center; color:#cdd3ea; margin:0 0 18px; font-size:14.5px; line-height:1.7; }
+  .stall-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .stall-chip{
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+    border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:12px;
+  }
+  .stall-chip .emo{ font-size:24px; }
+  .stall-chip .info b{ display:block; font-size:14.5px; color:var(--cream); }
+  .stall-chip .info span{ font-size:12.5px; color:#9aa1c2; }
+
+  .btn{
+    display:block; width:100%; border:none; cursor:pointer;
+    font-family:'Baloo 2','Noto Sans TC',sans-serif; font-weight:700; font-size:17px;
+    padding:15px 20px; border-radius:16px; text-align:center;
+    color:var(--navy3); background:var(--gold);
+    box-shadow:0 6px 0 #b6822a, 0 10px 18px rgba(0,0,0,.35);
+    transition:transform .12s, box-shadow .12s;
+  }
+  .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #b6822a, 0 4px 10px rgba(0,0,0,.3); }
+  .btn.secondary{
+    background:transparent; color:var(--cream); border:2px solid rgba(255,255,255,.3);
+    box-shadow:none; margin-top:10px;
+  }
+  .btn.secondary:active{ transform:translateY(2px); }
+  .btn.teal{ background:var(--teal); box-shadow:0 6px 0 #1d8d80, 0 10px 18px rgba(0,0,0,.35); color:#0b1f1c; }
+  .btn.teal:active{ box-shadow:0 2px 0 #1d8d80, 0 4px 10px rgba(0,0,0,.3); }
+
+  footer.brand{
+    margin-top:26px; text-align:center; font-size:11px; color:#6e76a0; line-height:1.6;
+  }
+  .jump-test{
+    margin-top:14px; text-align:center; font-size:11.5px; color:#6e76a0;
+    display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;
+  }
+  .jump-btn{
+    background:transparent; border:1px solid rgba(255,255,255,.18); color:#a9aed1;
+    font-size:11.5px; padding:5px 10px; border-radius:20px; cursor:pointer;
+    font-family:'Noto Sans TC',sans-serif;
+  }
+  .jump-btn:hover{ background:rgba(255,255,255,.08); color:var(--cream); }
+
+  /* ---------- game hud ---------- */
+  .hud{ display:flex; align-items:center; justify-content:space-between; margin:4px 0 14px; }
+  .hud .lives{ font-size:18px; letter-spacing:2px; }
+  .hud .combo{ font-family:'Baloo 2'; font-weight:700; color:var(--teal); font-size:14px; min-height:18px; }
+  .hud .coins{ font-family:'Baloo 2'; font-weight:800; color:var(--gold); font-size:16px; }
+  .round-tag{
+    display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:#cdd3ea;
+    background:rgba(255,255,255,.07); border-radius:20px; padding:4px 12px; margin-bottom:10px;
+  }
+
+  .qcard{
+    background:linear-gradient(160deg, #2b3360 0%, #1d2342 100%);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:20px; padding:22px 20px 18px;
+    box-shadow:0 14px 30px rgba(0,0,0,.35);
+    position:relative; min-height:120px;
+  }
+  .qcard .qnum{ font-size:12px; color:var(--gold); font-weight:700; margin-bottom:8px; letter-spacing:1px; }
+  .qcard .qtext{ font-size:16.5px; line-height:1.75; white-space:pre-line; color:var(--cream); }
+  .qcard .qtext .blank{ display:inline-block; border-bottom:2px solid var(--gold); min-width:54px; height:1px; margin:0 2px; }
+
+  .options{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
+  .opt{
+    text-align:left; font-size:15px; padding:13px 16px; border-radius:13px;
+    background:rgba(255,255,255,.05); border:1.5px solid rgba(255,255,255,.14);
+    color:var(--cream); cursor:pointer; font-family:'Noto Sans TC',sans-serif;
+    transition:.15s; display:flex; gap:10px; align-items:flex-start;
+  }
+  .opt .tag{ font-family:'Baloo 2'; font-weight:700; color:var(--gold); flex-shrink:0; }
+  .opt:hover{ background:rgba(255,255,255,.1); }
+  .opt.correct{ background:rgba(47,182,166,.22); border-color:var(--teal); }
+  .opt.wrong{ background:rgba(224,72,63,.22); border-color:var(--red); }
+  .opt.disabled{ pointer-events:none; opacity:.55; }
+  .opt.correct.disabled, .opt.wrong.disabled{ opacity:1; }
+
+  .feedback{
+    margin-top:14px; font-size:13.5px; line-height:1.7; color:#dfe3f5;
+    background:rgba(0,0,0,.22); border-radius:12px; padding:12px 14px; display:none;
+  }
+  .feedback.show{ display:block; }
+  .feedback b{ color:var(--gold); }
+
+  .vendor{ text-align:center; font-size:40px; margin:14px 0 2px; transition:transform .25s; }
+  .vendor.bump{ transform:scale(1.18) rotate(-4deg); }
+
+  .nextwrap{ margin-top:16px; }
+
+  /* boss hp bar */
+  .bosshp-wrap{ margin:6px 0 14px; }
+  .bosshp-label{ display:flex; justify-content:space-between; font-size:12px; color:#cdd3ea; margin-bottom:4px; }
+  .bosshp-bar{ height:12px; border-radius:8px; background:rgba(255,255,255,.1); overflow:hidden; }
+  .bosshp-fill{ height:100%; background:linear-gradient(90deg,var(--red),#ff8a72); transition:width .4s; }
+
+  /* round end / final screen */
+  .resultbox{ text-align:center; padding:14px 0 4px; }
+  .resultbox .emoji{ font-size:58px; }
+  .resultbox h2{ font-family:'Baloo 2'; color:var(--gold); margin:8px 0 2px; }
+  .resultbox p{ color:#cdd3ea; font-size:14px; margin:2px 0 16px; }
+  .statgrid{ display:flex; gap:10px; margin:10px 0 20px; }
+  .statbox{ flex:1; background:rgba(255,255,255,.06); border-radius:14px; padding:12px 6px; text-align:center; }
+  .statbox b{ display:block; font-family:'Baloo 2'; font-size:19px; color:var(--cream); }
+  .statbox span{ font-size:11.5px; color:#9aa1c2; }
+
+  .reviewlist{ margin-top:10px; }
+  .review-item{
+    background:rgba(255,255,255,.05); border-left:3px solid var(--red);
+    border-radius:10px; padding:10px 12px; margin-bottom:10px; font-size:13px; line-height:1.65;
+  }
+  .review-item .rq{ color:var(--cream); white-space:pre-line; margin-bottom:4px; }
+  .review-item .ra{ color:var(--teal); }
+  .review-item .rn{ color:#9aa1c2; margin-top:3px; }
+  .review-toggle{ font-size:13px; color:var(--gold); text-align:center; margin:14px 0; cursor:pointer; text-decoration:underline; }
+
+  .book-divider{
+    display:flex; align-items:center; gap:10px; margin:18px 0 10px; color:var(--gold);
+    font-family:'Baloo 2'; font-weight:700; font-size:14px;
+  }
+  .book-divider::before, .book-divider::after{ content:""; flex:1; height:1px; background:rgba(244,183,64,.35); }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START -->
+  <div class="screen active" id="screen-start">
+    <div class="market-emoji">🏮🍢🏮</div>
+    <h1 class="title">夜市文法尋寶</h1>
+    <p class="subtitle">第一冊＋第二冊文法關卡｜邊逛夜市邊把句型抓回家<br>答對攢金幣、連對拿連擊加成，三條命別輸光囉！</p>
+
+    <div class="book-divider">第一冊</div>
+    <div class="stall-list">
+      <div class="stall-chip"><span class="emo">🍢</span><div class="info"><b>第一攤：小吃攤文法關</b><span>方向介系詞・there is/are・電話用語 等 20 題</span></div></div>
+      <div class="stall-chip"><span class="emo">🏮</span><div class="info"><b>第二攤：人物百科攤</b><span>職業字彙・所有格・指示代名詞 等 20 題</span></div></div>
+      <div class="stall-chip"><span class="emo">🔍</span><div class="info"><b>第三攤：夜市情報站</b><span>情境推理單字＋文法綜合 33 題</span></div></div>
+      <div class="stall-chip"><span class="emo">👨‍🍳</span><div class="info"><b>隱藏關：老闆的加碼挑戰</b><span>同句型再加深，16 題進階版（選玩）</span></div></div>
+    </div>
+
+    <div class="book-divider">第二冊</div>
+    <div class="stall-list">
+      <div class="stall-chip"><span class="emo">🎯</span><div class="info"><b>第四攤：射氣球文法關</b><span>連接詞・量詞・問句句型 等 21 題</span></div></div>
+      <div class="stall-chip"><span class="emo">🎡</span><div class="info"><b>第五攤：摩天輪情境關</b><span>慣用語・時態・介系詞 等 18 題</span></div></div>
+      <div class="stall-chip"><span class="emo">🐉</span><div class="info"><b>第六攤：舞龍舞獅攤</b><span>單字辨義＋生活對話 20 題</span></div></div>
+      <div class="stall-chip"><span class="emo">🎣</span><div class="info"><b>第七攤：撈金魚攤</b><span>問句字＋日常用語 20 題</span></div></div>
+      <div class="stall-chip"><span class="emo">🐲</span><div class="info"><b>隱藏關二：龍王的終極考驗</b><span>會考模式進階題，16 題（選玩）</span></div></div>
+    </div>
+
+    <button class="btn" id="btnStart">開始逛夜市 🏮</button>
+    <div class="jump-test" id="jumpTest">
+      <span>想直接試玩：</span>
+      <button class="jump-btn" data-round="0">🍢 一攤</button>
+      <button class="jump-btn" data-round="1">🏮 二攤</button>
+      <button class="jump-btn" data-round="2">🔍 三攤</button>
+      <button class="jump-btn" data-round="3">👨‍🍳 隱藏關</button>
+      <button class="jump-btn" data-round="4">🎯 四攤</button>
+      <button class="jump-btn" data-round="5">🎡 五攤</button>
+      <button class="jump-btn" data-round="6">🐉 六攤</button>
+      <button class="jump-btn" data-round="7">🎣 七攤</button>
+      <button class="jump-btn" data-round="8">🐲 隱藏關二</button>
+    </div>
+    <footer class="brand">Jin's Pro</footer>
+  </div>
+
+  <!-- ROUND INTRO -->
+  <div class="screen" id="screen-roundintro">
+    <div class="resultbox">
+      <div class="emoji" id="riEmoji">🍢</div>
+      <h2 id="riTitle">第一攤：小吃攤文法關</h2>
+      <p id="riDesc">20 題基礎句型，答錯 3 次就要重新逛這一攤喔！</p>
+      <button class="btn" id="btnRoundStart">出發！</button>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div class="round-tag" id="roundTag">🍢 小吃攤文法關</div>
+    <div class="hud">
+      <div class="lives" id="livesDisplay">❤️❤️❤️</div>
+      <div class="combo" id="comboDisplay"></div>
+      <div class="coins" id="coinsDisplay">🪙 0</div>
+    </div>
+
+    <div class="bosshp-wrap" id="bossHpWrap" style="display:none;">
+      <div class="bosshp-label"><span>老闆 HP</span><span id="bossHpText">16/16</span></div>
+      <div class="bosshp-bar"><div class="bosshp-fill" id="bossHpFill" style="width:100%"></div></div>
+    </div>
+
+    <div class="qcard">
+      <div class="qnum" id="qNum">第 1 / 20 題</div>
+      <div class="qtext" id="qText"></div>
+    </div>
+
+    <div class="options" id="optionsWrap"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="vendor" id="vendor">🧑‍🍳</div>
+
+    <div class="nextwrap">
+      <button class="btn teal" id="btnNext" style="display:none;">下一題 →</button>
+    </div>
+  </div>
+
+  <!-- ROUND END (fail) -->
+  <div class="screen" id="screen-fail">
+    <div class="resultbox">
+      <div class="emoji">😵</div>
+      <h2>哎呀，三條命用完了！</h2>
+      <p id="failDesc">別擔心，再逛一次這個攤位，把文法記熟就過關～</p>
+      <button class="btn" id="btnRetryRound">重新挑戰這一攤</button>
+      <button class="btn secondary" id="btnBackHomeFromFail">回到夜市入口</button>
+    </div>
+  </div>
+
+  <!-- ROUND CLEAR -->
+  <div class="screen" id="screen-clear">
+    <div class="resultbox">
+      <div class="emoji">🎉</div>
+      <h2 id="clearTitle">過關啦！</h2>
+      <div class="statgrid">
+        <div class="statbox"><b id="clearScore">0</b><span>本攤得分</span></div>
+        <div class="statbox"><b id="clearAcc">0%</b><span>正確率</span></div>
+        <div class="statbox"><b id="clearBest">x1</b><span>最高連擊</span></div>
+      </div>
+      <button class="btn" id="btnNextRound">前往下一攤 →</button>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="screen" id="screen-final">
+    <div class="resultbox">
+      <div class="emoji">🏆</div>
+      <h2>全部關卡攻略完成！</h2>
+      <p>把下面答錯的題目複習一輪，下次再殺回來挑戰更高分！</p>
+      <div class="statgrid">
+        <div class="statbox"><b id="finalCoins">0</b><span>總金幣</span></div>
+        <div class="statbox"><b id="finalAcc">0%</b><span>總正確率</span></div>
+        <div class="statbox"><b id="finalBest">x1</b><span>最高連擊</span></div>
+      </div>
+      <div class="review-toggle" id="reviewToggle">▾ 查看錯題複習</div>
+      <div class="reviewlist" id="reviewList" style="display:none;"></div>
+      <button class="btn" id="btnRestartAll" style="margin-top:18px;">再玩一次（重新洗牌）</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===================== 資料區：第一冊文法題庫 ===================== */
+const STALL1 = {
+  id:'stall1', emoji:'🍢', title:'第一攤：小吃攤文法關',
+  desc:'20 題基礎句型，答錯 3 次就要重新逛這一攤喔！',
+  questions:[
+    {q:"On weekends, many people go ___ the road to the mountains.",
+     opts:["along","above","between","across"], a:"along", n:"go along the road＝沿著道路走"},
+    {q:"There are many birds singing in the ___ every morning.",
+     opts:["restroom","chair","garden","pond"], a:"garden", n:"花園裡才會有鳥在唱歌"},
+    {q:"How many kinds of animals ___ in the zoo?",
+     opts:["are they","do they","is there","are there"], a:"are there", n:"How many＋複數名詞，疑問句用 are there"},
+    {q:"It's very cold outside. Don't forget to put on your ___ when you go outside.",
+     opts:["player","jacket","lantern","doll"], a:"jacket", n:"外套（夾克）才能保暖"},
+    {q:"There is a bus stop ___ Bill's house, and we all wait for the school bus there every morning.",
+     opts:["in","between","in front of","across"], a:"in front of", n:"in front of＝在…前面"},
+    {q:"Ben is a great player, ___. He is a great singer.",
+     opts:["but Mars isn't","but Mars is","and James is","and James isn't"], a:"but Mars isn't",
+     n:"用 but 表轉折：Mars 不是好球員，但（他）很會唱歌，He 指 Mars"},
+    {q:"There are too many children in Leo's family, so he has to share the ___ with his three brothers.",
+     opts:["country","night market","museum","bedroom"], a:"bedroom", n:"和兄弟共用的應該是房間"},
+    {q:"Joe: Linda, ___ I borrow your eraser?\nLinda: Why not?",
+     opts:["do","can","am","does"], a:"can", n:"Can I borrow…?＝請求許可"},
+    {q:"It's really kind of your sister to help the old man walk ___ the road.",
+     opts:["cross","across","from","off"], a:"across", n:"walk across the road＝走過馬路"},
+    {q:"Lisa ___ the new shoes for her birthday party now.",
+     opts:["try on","trying on","tries on","is trying on"], a:"is trying on", n:"now → 現在進行式 is/are + Ving"},
+    {q:"You ___ watch TV all day, or you will become a couch potato.",
+     opts:["are","canot","cann't","cannot"], a:"cannot", n:"cannot 拼法才正確；canot、cann't 都是錯誤拼法"},
+    {q:"Steven is a good boy. He never makes any ___ to his teachers and parents.",
+     opts:["trouble","mountain","outside","place"], a:"trouble", n:"make trouble＝惹麻煩"},
+    {q:"Mina: This is Mina. May I speak to Bill?\nBill: ___ What's up, Mina?",
+     opts:["You have the wrong number.","Hold on, please.","You can leave a message.","This is he speaking."],
+     a:"This is he speaking.", n:"電話用語：本人接電話要說 This is he/she speaking."},
+    {q:"As a good student, you should always get up early and go to school ___.",
+     opts:["at this time","at that time","on time","in time"], a:"on time", n:"on time＝準時"},
+    {q:"Jane: Can you give me a hand here?\nKen: No ___ at all. What can I do for you?",
+     opts:["problem","surprise","picnic","snack"], a:"problem", n:"No problem at all.＝完全沒問題"},
+    {q:"Please use a pencil and a(n) ___ to draw a line.",
+     opts:["eraser","ruler","case","note"], a:"ruler", n:"畫直線要用尺（ruler）"},
+    {q:"Look! Jolin ___ my favorite song on TV now.",
+     opts:["sing","sings","is singing","is sing"], a:"is singing", n:"now → 現在進行式"},
+    {q:"___ much juice in the bottle. Everyone can only have a small glass.",
+     opts:["There isn't","There aren't","There hasn't","There haven't"], a:"There isn't", n:"juice 不可數名詞，用 isn't"},
+    {q:"Alice: ___ is it now?\nLily: Eleven to twelve. Let's go for lunch.",
+     opts:["What day","How old","What time","How many"], a:"What time", n:"問幾點要用 What time"},
+    {q:"Julia: When is our English class?\nJoe: ___ We need to hurry up.",
+     opts:["It is under the desk.","It is at two ten.","It is near the park.","It is on Saturday."],
+     a:"It is at two ten.", n:"When 問時間，回答要用時間點"}
+  ]
+};
+
+const STALL2 = {
+  id:'stall2', emoji:'🏮', title:'第二攤：人物百科攤',
+  desc:'20 題職業字彙與所有格句型，一樣是三條命喔！',
+  questions:[
+    {q:"Mark is a very good ___. He works outdoors with a shovel and likes his job very much.",
+     opts:["police officer","waiter","worker","teacher"], a:"worker", n:"用鐵鏟在戶外工作的是工人（worker）"},
+    {q:"Nicholas and his girlfriend got married. I am really ___ to hear about that.",
+     opts:["nice","great","big","happy"], a:"happy", n:"聽到好消息要用 happy"},
+    {q:"Tim's sister works at a factory. ___ likes ___ work very much.",
+     opts:["She; her","He; her","She; his","He; his"], a:"She; her", n:"sister → she；自己的工作 → her work"},
+    {q:"The woman is a ___. She takes care of sick people in the hospital.",
+     opts:["coach","writer","nurse","clerk"], a:"nurse", n:"在醫院照顧病人的是護士"},
+    {q:"Frank: I'm Frank. Nice to meet you.\nElla: ___",
+     opts:["Nice to meet you.","Nice to meet you, too.","Nice to see you, too.","See you later."],
+     a:"Nice to meet you, too.", n:"第一次見面才用 meet；too 表示『我也是』"},
+    {q:"Your daughters are very beautiful. ___ eyes are big, and they have straight hair.",
+     opts:["Her","Their","Your","Our"], a:"Their", n:"daughters（複數）→ their"},
+    {q:"This is a ___ school. No girls study here.",
+     opts:["boy's","boys'","boys","boies'"], a:"boys'", n:"很多男生唸的學校 → boys'（複數所有格）"},
+    {q:"Frank: ___ is my watch? I can't find it.\nDad: Maybe you left it in the bathroom.",
+     opts:["What","Who","How","Where"], a:"Where", n:"問東西在哪裡要用 Where"},
+    {q:"When I'm hungry, I like to have ___ for lunch. They are my favorite food.",
+     opts:["noodles","rice","beef","bread"], a:"noodles", n:"They are 需接複數名詞，只有 noodles 是複數形"},
+    {q:"___ fathers are both engineers, and they work in the same company.",
+     opts:["Jack and Mark's","Jack and Mark","Jack's and Mark's","Jack's and Mark"],
+     a:"Jack's and Mark's", n:"fathers 是複數，代表兩人各自有各自的爸爸（不是同一個爸爸），所以兩個名字都要加's"},
+    {q:"Mrs. Chen is a very busy ___. She takes care of all the housework in her family.",
+     opts:["family","student","housewife","tour guide"], a:"housewife", n:"做家事、照顧家庭的是家庭主婦"},
+    {q:"The love story of the king and the queen is ___ but sad. It makes people more interested in visiting Taj Mahal.",
+     opts:["delicious","beautiful","favorite","angry"], a:"beautiful", n:"形容愛情故事用 beautiful"},
+    {q:"Jeff is my mom's brother. He is my ___.",
+     opts:["cousin","aunt","brother","uncle"], a:"uncle", n:"媽媽的兄弟 → uncle"},
+    {q:"Amy: Your husband is handsome, and he looks so young.\nHebe: Thanks. In fact, he's already fifty ___.",
+     opts:["years old","year old","year-old","years"], a:"years old", n:"年齡：數字 + years old"},
+    {q:"Americans eat with ___ and forks. It is difficult for them to use chopsticks.",
+     opts:["knife","knives","knifes","knive"], a:"knives", n:"knife 的複數是 knives（f → ves）"},
+    {q:"Mr. and Mrs. Lin ___ proud of their son. He always helps the people in need.",
+     opts:["×","am","are","is"], a:"are", n:"Mr. and Mrs. Lin 是複數主詞 → are"},
+    {q:"In the zoo, ___ and pandas are cute. They are black and white.",
+     opts:["monkeys","zebras","lions","elephants"], a:"zebras", n:"斑馬和熊貓都是黑白色的"},
+    {q:"___, Tina. Everything will be fine.",
+     opts:["Don't sad","Not be sad","Don't be sad","Not sad"], a:"Don't be sad", n:"祈使句否定：Don't be + 形容詞"},
+    {q:"Peter: Who is the man? I didn't see him before.\nScott: He's ___. He is from the USA.",
+     opts:["well","a doctor","my cousin","thirty-five"], a:"my cousin", n:"Who 問身分關係，回答用親屬關係最貼切"},
+    {q:"Alice: Do you know anyone in your new office?\nMike: No, I don't know any of ___.",
+     opts:["they","their","theirs","them"], a:"them", n:"any of + 受格代名詞 them"}
+  ]
+};
+
+const BOSS = {
+  id:'boss', isBoss:true, emoji:'👨‍🍳', title:'隱藏關：老闆的加碼挑戰',
+  desc:'同樣的句型再加深！16 題進階版，挑戰看看你的極限。',
+  questions:[
+    {q:"There ___ a small park and two coffee shops ___ the corner of Main Street, so it's easy to find.",
+     opts:["is; on","are; at","is; at","are; on"], a:"are; on",
+     n:"主詞其實是『一個公園＋兩家咖啡店』，整體視為複數 → are；on the corner（在街角）是固定用法"},
+    {q:"Sam and Lily ___ next-door neighbors, but ___ habits are completely different from each other.",
+     opts:["is; their","are; their","are; them","is; them"], a:"are; their",
+     n:"Sam and Lily（複數）→ are；後面接名詞 habits，要用所有格 their"},
+    {q:"___ many pencils in the box? — No, ___ only one pen.",
+     opts:["Is there; there is","Are there; there's","Are there; there're","Is there; there're"],
+     a:"Are there; there's", n:"pencils（複數）→ Are there；one pen（單數）→ there's"},
+    {q:"Excuse me, ___ I use your phone for a minute? Mine just died.",
+     opts:["am","do","may","does"], a:"may", n:"may 用來表示更禮貌的請求許可"},
+    {q:"Please ___ noise after ten o'clock; the baby next door is already asleep.",
+     opts:["not make","don't make","doesn't make","not making"], a:"don't make",
+     n:"祈使句否定：Don't + 原形動詞"},
+    {q:"The twins look so much alike that even ___ own parents sometimes can't tell them apart.",
+     opts:["they","them","their","theirs"], a:"their", n:"own 前面要用所有格 their"},
+    {q:"Mr. and Mrs. Wood's daughter ___ violin every afternoon, but right now she ___ to a science club meeting.",
+     opts:["practices; is going","practices; goes","is practicing; goes","practice; is going"],
+     a:"practices; is going", n:"every afternoon（習慣）→ 現在簡單式；right now（此刻）→ 現在進行式"},
+    {q:"The forks in this drawer are clean, but the ___ still need washing.",
+     opts:["knifes","knife","knives","knive"], a:"knives", n:"knife 的複數是 knives"},
+    {q:"Neither Tom ___ his brother ___ able to fix the broken bike by themselves.",
+     opts:["and; is","nor; are","or; is","nor; is"], a:"nor; is",
+     n:"neither A nor B，動詞要和最接近的 B（his brother，單數）一致"},
+    {q:"— Hello, is this Mr. Baker's office? — ___ I'm afraid he's out for lunch right now.",
+     opts:["This is he speaking.","Sorry, you have the wrong number.","Speaking, how can I help?","This is his secretary speaking."],
+     a:"This is his secretary speaking.", n:"對方問的是辦公室，接電話的人不是 Mr. Baker 本人，不能說 This is he speaking."},
+    {q:"There ___ hardly ___ snow left on the mountain top by the end of March this year.",
+     opts:["is; any","are; some","is; some","are; any"], a:"is; any",
+     n:"snow 是不可數名詞 → is；否定語氣的 hardly 後面常接 any"},
+    {q:"The shoes on the top shelf are mine, but the ones ___ the bottom belong to my sister.",
+     opts:["at","on","in","between"], a:"on", n:"on the bottom（shelf）和 on the top（shelf）對應使用"},
+    {q:"Both of Ken's parents ___ teachers, and ___ classrooms are right next to each other at school.",
+     opts:["is; their","are; their","are; them","is; them"], a:"are; their",
+     n:"Both of...（兩者都）→ 複數 → are；後面接名詞要用所有格 their"},
+    {q:"The train leaves ___ nine o'clock sharp, so make sure you arrive ___ time.",
+     opts:["at; on","on; in","at; in","in; on"], a:"at; on",
+     n:"at + 時間點；arrive on time＝準時抵達"},
+    {q:"I've looked everywhere, but I still can't find my keys. They must ___ in the car.",
+     opts:["be","being","is","are"], a:"be", n:"情態助動詞 must 後面要接原形動詞 be"},
+    {q:"The coach told the players, “___ talking and listen carefully, or you'll miss the new strategy.”",
+     opts:["Stop","Stops","Stopping","To stop"], a:"Stop", n:"祈使句要用原形動詞開頭"}
+  ]
+};
+
+const STALL3 = {
+  id:'stall3', emoji:'🔍', title:'第三攤：夜市情報站（單字推理）',
+  desc:'33題情境推理＋文法綜合題，跟著線索找答案，一樣是三條命！',
+  questions:[
+    {q:"Adam shared his trip to Japan with his classmates.\n“...I saw beautiful snow, took a hot spring bath, and ate yummy hot pot...”\nWhich season did he go to Japan?",
+     opts:["Spring","Summer","Fall","Winter"], a:"Winter", n:"雪、溫泉、火鍋都是冬天的線索"},
+    {q:"The ___ Eric saw Lisa, he fell in love with her.",
+     opts:["clock","future","number","moment"], a:"moment", n:"the moment...＝在…的那一刻（一見鍾情）"},
+    {q:"I caught a cold. My mom didn't ___ me to go out.",
+     opts:["touch","allow","throw","run"], a:"allow", n:"allow sb to V＝允許某人做某事"},
+    {q:"___ of vegetables kept going up after the typhoon brought lots of rain.",
+     opts:["Dollars","Prices","Rules","Facts"], a:"Prices", n:"物價（prices）才會用 went up 描述上漲"},
+    {q:"I visited my cousin in America many ___ last year.",
+     opts:["hours","shows","times","minutes"], a:"times", n:"many times＝很多次"},
+    {q:"Alice: Can you ___ the phone? It's ringing.\nBen: I can't. I'm in the bathroom.",
+     opts:["pick up","hold on","get off","wake up"], a:"pick up", n:"pick up the phone＝接電話"},
+    {q:"Tina: Do you have the time?\nTom: ___",
+     opts:["I'm busy now.","I have to go right now.","It's on Monday.","It's a quarter to ten."],
+     a:"It's a quarter to ten.", n:"Do you have the time?＝請問現在幾點？要用時間回答"},
+    {q:"I have to leave here. I can't ___ the bad smell anymore!",
+     opts:["rest","expect","stand","sign"], a:"stand", n:"can't stand＝無法忍受"},
+    {q:"My dog is an ___ puppy. It's cute.",
+     opts:["eight months old","eight-month-old","two-month-old","two months old"],
+     a:"eight-month-old", n:"名詞前的複合形容詞要用連字號且單數：eight-month-old；an 後面要接母音開頭，eight 符合"},
+    {q:"Waiter: Are you ready to order?\nBetty: Yes, I'd like a hamburger with ___ egg.",
+     opts:["an","a","the","×"], a:"an", n:"egg 是母音開頭，要用 an"},
+    {q:"Jenny, ___ watch the video on your smartphone when walking on the street. It's very dangerous.",
+     opts:["don't","doesn't","won't","can't"], a:"don't", n:"祈使句（叫人別做某事）用 Don't + 原形動詞"},
+    {q:"Jay ___ his wife with one hundred roses on her birthday. She felt so happy.",
+     opts:["loved","noticed","surprised","wished"], a:"surprised", n:"surprise sb with sth＝用…給某人驚喜"},
+    {q:"Breakfast is the ___ meal of the day. Don't miss it.",
+     opts:["simple","main","long","pretty"], a:"main", n:"the main meal＝最主要的一餐"},
+    {q:"I don't ___ lending you the book. I already read it.",
+     opts:["guess","mind","free","excuse"], a:"mind", n:"don't mind + Ving＝不介意做某事"},
+    {q:"Helen: Why are you crying, Judy?\nJudy: Because your sandwich is much bigger than ___.",
+     opts:["me","mine","my","I"], a:"mine", n:"mine＝my sandwich，所有格代名詞"},
+    {q:"Cindy and May, make ___ at home. I have to take care of other kids.",
+     opts:["themselves","yourself","ourselves","yourselves"], a:"yourselves", n:"對兩個人說話（you 複數）→ yourselves"},
+    {q:"Jim is calling the doctor.\n“...I fell from the bike and I can't walk at all...”\nWhere did Jim get hurt?",
+     opts:["His shoulder","His hand","His leg","His hair"], a:"His leg", n:"不能走路（can't walk）代表腳受傷"},
+    {q:"The clothes are ___. They are not expensive.",
+     opts:["on sale","having a sale","trying on","taking off"], a:"on sale", n:"on sale＝特價中"},
+    {q:"I feel sick. I have no ___ for eating.",
+     opts:["mouth","body","stomach","heart"], a:"stomach", n:"have no stomach for sth＝沒有食欲/沒胃口做某事"},
+    {q:"Eva: I want to make a birthday cake for Lisa.\nJack: OK. I will buy ___ milk after work.",
+     opts:["many","a few","any","two bottles of"], a:"two bottles of", n:"milk 不可數，many/a few 用於可數名詞；two bottles of milk 才是正確的量詞用法"},
+    {q:"___ mother is very beautiful, and they look like her.",
+     opts:["Wendy and Alice","Wendy and Alice's","Wendy's and Alice's","Wendy's and Alice"],
+     a:"Wendy and Alice's", n:"mother 是單數，代表兩人共有同一個媽媽，只要在最後一個名字加's"},
+    {q:"Laney: ___ books are these?\nJack: They are John's. He bought them yesterday.",
+     opts:["What","Whose","Which","Who"], a:"Whose", n:"問東西是誰的，要用 Whose"},
+    {q:"Mandy found something on the net for her party.\n“...Put eggs, vegetables and pork between two pieces of bread, and bake...”\nWhat did she want to make?",
+     opts:["Cookies","Sandwiches","Beef noodles","Steak"], a:"Sandwiches", n:"把食材夾在兩片麵包中間，就是三明治的做法"},
+    {q:"I'm too fat, so the doctor asks me to ___ in order to stay healthy.",
+     opts:["put on clothes","go on a diet","eat out","make sure"], a:"go on a diet", n:"go on a diet＝開始節食/減肥"},
+    {q:"Please ___ the flowers, or they'll die soon.",
+     opts:["shake","clap","water","choose"], a:"water", n:"water the flowers＝幫花澆水"},
+    {q:"Melody is a ___ girl. Everybody likes her.",
+     opts:["sweet","delicious","thirsty","possible"], a:"sweet", n:"形容人貼心可愛要用 sweet，delicious 只能形容食物"},
+    {q:"There is ___ milk in the refrigerator. We need to shop for more.",
+     opts:["several","little","many","much"], a:"little", n:"milk 不可數用 little（幾乎沒有），所以才要再買；several/many 用於可數名詞"},
+    {q:"Liz: The yellow dress looks prettier than the blue ___.\nAmy: I think so, too.",
+     opts:["ones","that","one","it"], a:"one", n:"代替前面提過的單數名詞 dress，要用 one"},
+    {q:"Most students know they have to work hard to get good grades. But to say is one thing; to do is quite ___. Many still don't work hard enough.",
+     opts:["another","one","other","the other"], a:"another", n:"...is one thing; ... is quite another＝說是一回事，做又是另一回事（固定用法）"},
+    {q:"To eat the soup, you can use the ___ on your right.",
+     opts:["fork","knife","spoon","chopsticks"], a:"spoon", n:"喝湯要用湯匙（spoon）"},
+    {q:"The shoe store is having a big ___, so there are many people shopping inside.",
+     opts:["cold","fever","sale","life"], a:"sale", n:"have a sale＝舉辦特賣會"},
+    {q:"Frank: Would you like tea or coffee?\nKevin: ___ is fine. Thank you.",
+     opts:["Both","Either","Every","It"], a:"Either", n:"在『A or B』的選擇中，回答『兩個都可以』要用 either"},
+    {q:"___ hold the big tree in the ground, so it won't fall down easily when strong typhoons hit here.",
+     opts:["Bugs","Roots","Beans","Menus"], a:"Roots", n:"把樹固定在土裡的是樹根（roots）"}
+  ]
+};
+
+/* ===================== 第二冊題庫 ===================== */
+const STALL4 = {
+  id:'stall4', emoji:'🎯', title:'第四攤：射氣球文法關',
+  desc:'21題連接詞・量詞・問句句型綜合題，一樣是三條命！',
+  questions:[
+    {q:"Please clear away the dishes when you ___ eating. No food or trash on the table.",
+     opts:["start","keep","finish","practice"], a:"finish", n:"finish + Ving＝做完某事；吃完飯才清桌子"},
+    {q:"Paula: ___ pair of jeans will you try on, the black one or the gray one?\nPeter: Uh, both look like something only my grandfather would wear. I'll just try on this pair of blue jeans.",
+     opts:["How","What","Which","Where"], a:"Which", n:"在兩個已知選項中選一個，要用 which"},
+    {q:"Karen and Adam are going to Japan this summer. Are you going with ___?",
+     opts:["us","them","her","him"], a:"them", n:"Karen and Adam（兩人）→ them"},
+    {q:"Brian: Do your brothers and sister like parties?\nEric: My sister, Grace, likes parties, but my brothers ___.",
+     opts:["isn't","can't","don't","doesn't"], a:"don't", n:"brothers 是複數，否定用 don't"},
+    {q:"Ted: Mom, I'm hungry. Can I have some hot dogs?\nMom: Yes, but don't touch them with your ___ hands. Wash your hands before you eat.",
+     opts:["clean","dirty","favorite","young"], a:"dirty", n:"吃飯前要先洗手，代表手是髒的（dirty）"},
+    {q:"Mr. Lin: How much juice do we need? I can get it on my way home.\nMrs. Lin: Two ___. Thanks, honey.",
+     opts:["bags","bowls","plates","bottles"], a:"bottles", n:"果汁用瓶（bottles）裝才合理"},
+    {q:"Jessica's favorite animal in the zoo is ___. They have black and white lines on them.",
+     opts:["foxes","horses","zebras","monkeys"], a:"zebras", n:"有黑白條紋的動物是斑馬"},
+    {q:"Rick: It's Sunday. Don't you play tennis today?\nJim: No, I ___ play tennis on Sunday. I play it on Wednesday and Saturday.",
+     opts:["sometimes","often","never","always"], a:"never", n:"他只在週三、六打網球，所以週日『從不』打"},
+    {q:"___, John. Walk to Mary's desk, and say “thank you.”",
+     opts:["Go to bed","Stand up","Read it again","Sit down"], a:"Stand up", n:"要先站起來才能走到 Mary 的桌子旁"},
+    {q:"The cat looked thirsty, so Tracy gave it ___ of her milk. The cat drank it up right away.",
+     opts:["a little","a few","many","one"], a:"a little", n:"milk 不可數，用 a little"},
+    {q:"Terry is interested in different kinds of flowers and trees. He wants to know more information about them, so he goes to the library. What kinds of books should he borrow?",
+     opts:["The books about planets.","The books about animals.","The books about parks.","The books about plants."],
+     a:"The books about plants.", n:"花和樹都屬於植物（plants）"},
+    {q:"Daniel: Mom, I think I have a cold.\nMom: Go to bed early, ___ you'll feel worse.",
+     opts:["but","and","or","so"], a:"or", n:"早點睡，『否則』你會更不舒服，用 or"},
+    {q:"Gary: Do we have ice cream in the refrigerator?\nJane: Yes, but not ___.",
+     opts:["one","some","many","much"], a:"much", n:"ice cream 不可數，否定用 not much"},
+    {q:"The meeting started at 9:00 a.m. Jim came at 9:15 a.m. He was ___.",
+     opts:["early","hungry","late","lucky"], a:"late", n:"晚了15分鐘到，是遲到（late）"},
+    {q:"Two Parties, one of Kevin Pitt's newest books, ___ the story of a man with two interesting jobs at a time.",
+     opts:["tell","tells","to tell","telling"], a:"tells", n:"書名 Two Parties 是單數主詞（一本書），動詞用 tells"},
+    {q:"Karen: How often do you visit your grandpa and grandma?\nBill: They live in Japan, so we can only visit them ___.",
+     opts:["every day","once a year","next month","twice a week"], a:"once a year", n:"住在日本很遠，所以拜訪頻率低，選一年一次"},
+    {q:"Amy: I'm planning a trip to Canada. ___ the weather like there in October?\nLily: Cool and dry. It's a great time for a trip.",
+     opts:["How's","Where's","When's","What's"], a:"What's", n:"What's the weather like?＝天氣如何？固定問法"},
+    {q:"Last month, Jim's line was always busy. No one could get to him by phone. At first we thought there was something wrong with his phone, but later we found out he forgot to pay...\nWhat does “line” mean here?",
+     opts:["Telephone.","A row of people.","A long thin mark.","A way of thinking."], a:"Telephone.",
+     n:"電話佔線（line is busy）、用電話找人（by phone），這裡 line 指電話"},
+    {q:"Davos's family business doesn't go as well as it did in the past, but as ___ child of the family, with no brother or sister, he makes up his mind to save it on his own.",
+     opts:["the first","the last","the only","the other"], a:"the only", n:"沒有兄弟姊妹＝獨生子，the only child"},
+    {q:"Dad: What's your birthday wish?\nAnnie: I would really love a new bicycle.\nDad: No problem. I'll buy ___ for you.",
+     opts:["one","the other","it","another"], a:"one", n:"指『一台（不特定的）新腳踏車』，用 one"},
+    {q:"Mina: Oh, no! My computer doesn't work! What can I do?\nSean: Don't worry. I ___ fix it. Let me check.",
+     opts:["do","can","should","must"], a:"can", n:"can 表示『有能力』提供幫忙"}
+  ]
+};
+
+const STALL5 = {
+  id:'stall5', emoji:'🎡', title:'第五攤：摩天輪情境關',
+  desc:'18題慣用語・時態・介系詞綜合題，坐摩天輪邊複習！',
+  questions:[
+    {q:"Hey! Don't ___ your finger at me like that. It's not polite at all!",
+     opts:["break","clean","point","taste"], a:"point", n:"point your finger at sb＝用手指指著某人"},
+    {q:"Those students ___ hard for the race. They exercise for one hour in the morning and run for another hour after school.",
+     opts:["fight","knock","study","train"], a:"train", n:"為比賽『訓練』要用 train"},
+    {q:"I ___ have pumpkin soup, so I am really excited about the Thanksgiving dinner. It will be my first time to taste it.",
+     opts:["always","never","often","seldom"], a:"never", n:"第一次嚐到＝以前『從未』喝過"},
+    {q:"I like rock music, but my brother doesn't. He thinks it is ___. He likes light music more.",
+     opts:["funny","lovely","noisy","wrong"], a:"noisy", n:"喜歡輕音樂的人會覺得搖滾樂『吵雜』(noisy)"},
+    {q:"Vivi: Honey, could you please go buy some ___ for me? I need it for the red bean soup.\nWill: Why? There is a lot in the fridge. Don't make the soup too sweet, please.",
+     opts:["water","sugar","oranges","vegetables"], a:"sugar", n:"紅豆湯要加糖，別太甜＝在說糖（sugar）"},
+    {q:"Fanny: ___ is the last baseball game this year?\nKen: On Saturday. It's also my birthday!",
+     opts:["What day","What date","What time","What month"], a:"What day", n:"回答 On Saturday（星期幾），問句用 What day"},
+    {q:"Mom hit our dog when she was pushing the door open. She didn't see it lying ___ the door.",
+     opts:["in","over","along","behind"], a:"behind", n:"狗躲在門後面，所以開門時撞到牠"},
+    {q:"The ___ of today's lesson is the four seasons in Taiwan.",
+     opts:["drop","fact","subject","vacation"], a:"subject", n:"課程的『主題』是 subject"},
+    {q:"Sandy likes wearing clothes of many ___. Her brother always says she is just like a walking rainbow.",
+     opts:["colors","pictures","prices","sizes"], a:"colors", n:"像彩虹一樣，指穿很多『顏色』的衣服"},
+    {q:"Peter didn't pass the driving test ___ he went to the wrong place. In fact, he didn't even have a chance to take it.",
+     opts:["and","because","but","when"], a:"because", n:"去錯地方是沒通過考試的『原因』"},
+    {q:"I just bought a strawberry cake. Let's enjoy it. Oh, my! My dog ___ it. Stop eating, Kenny!",
+     opts:["ate","is eating","was eating","can eat"], a:"is eating", n:"Stop eating 表示『正在』發生，用現在進行式"},
+    {q:"Nina: What is the word on that sign? It looks like a four-___ word.\nBob: Let me see. Oh, it's “SLOW.”",
+     opts:["group","letter","number","size"], a:"letter", n:"SLOW 有四個字母（letter）"},
+    {q:"Jane: I didn't see Judy at John's party last night. ___ she sick?\nMeg: Yes. She had a serious cold and couldn't join the party.",
+     opts:["Was","Were","Did","Does"], a:"Was", n:"she 是單數，過去式 be 動詞用 was"},
+    {q:"Honey, my car broke down this morning. Could you ___ me ___ on your way home?",
+     opts:["pick; up","take; off","put; away","turn; down"], a:"pick; up", n:"pick sb up＝開車載某人一程"},
+    {q:"I am too heavy and I feel so full. I wouldn't like ___ snacks now.",
+     opts:["any","few","some","little"], a:"any", n:"wouldn't like 是否定語氣，後面用 any"},
+    {q:"Don't touch the bird on the head, ___ it will be unhappy and bite you.",
+     opts:["or","so","but","and"], a:"or", n:"別做…，否則…，用 or"},
+    {q:"The sheep are cute and friendly. Let's go get some grass to feed ___.",
+     opts:["it","its","them","they"], a:"them", n:"sheep 複數（這群羊）→ them"},
+    {q:"Debbie and her husband are both busy, so they take turns ___ their dog to make sure it has food to eat every day.",
+     opts:["cleaning","feeding","helping","walking"], a:"feeding", n:"確保狗有東西吃，是『輪流餵食』(feeding)"}
+  ]
+};
+
+const STALL6 = {
+  id:'stall6', emoji:'🐉', title:'第六攤：舞龍舞獅攤',
+  desc:'20題單字辨義＋生活對話綜合題，敲鑔打鼓邊複習！',
+  questions:[
+    {q:"Amy's seat is in the front of the classroom. However, she can't see the words on the ___ even from her seat. She is nearsighted（近視）.",
+     opts:["chalk","glasses","science","blackboard"], a:"blackboard", n:"教室裡看不清楚的是黑板（blackboard）"},
+    {q:"Today is Wednesday, and I have a swimming lesson tomorrow. My swimming lesson is on ___.",
+     opts:["Friday","Tuesday","Thursday","Saturday"], a:"Thursday", n:"星期三的明天是星期四"},
+    {q:"A: ___ color do you like, blue or yellow?\nB: I like blue.",
+     opts:["Which","Who","How","Where"], a:"Which", n:"在兩個顏色中選一個，用 which"},
+    {q:"Susan's mom can speak many ___. She can talk to people from different countries.",
+     opts:["sentences","languages","letters","words"], a:"languages", n:"能跟不同國家的人溝通，是會說多種『語言』"},
+    {q:"A: Kent, could you help Jim? He can't get down from the tree.\nB: ___ is he doing up there?",
+     opts:["What","Where","Which","Why"], a:"What", n:"問『他在那裡做什麼』用 What"},
+    {q:"This ___ is useful. There are many example sentences in it.",
+     opts:["dictionary","grade","marker","envelope"], a:"dictionary", n:"裡面有很多例句的工具書是字典"},
+    {q:"Rita wants to learn dancing, but she doesn't have time on ___. So, she learns it on Saturdays and Sundays.",
+     opts:["weekends","nights","weekdays","weeks"], a:"weekdays", n:"她只能在週末學，平日（weekdays）沒空"},
+    {q:"The ___ is from Mary's cousin. He mailed it from the USA.",
+     opts:["gym","house","story","letter"], a:"letter", n:"用郵寄（mailed）的東西是信（letter）"},
+    {q:"Victor is from the USA. He doesn't have much ___ of Chinese history.",
+     opts:["example","knowledge","lesson","question"], a:"knowledge", n:"knowledge of＝對…的知識"},
+    {q:"He eats a lot but doesn't do any ___. So he's getting fatter and fatter!",
+     opts:["exercise","dishes","homework","work"], a:"exercise", n:"吃多又不運動才會變胖"},
+    {q:"Dora is good at painting. She always gets good grades in ___.",
+     opts:["history","art","music","PE"], a:"art", n:"畫畫是美術（art）課的內容"},
+    {q:"No one in the class knows the answer to the ___. It's too difficult.",
+     opts:["question","postcard","page","workbook"], a:"question", n:"題目太難沒人知道答案，指『問題』(question)"},
+    {q:"A: Who ___ breakfast for you every morning?\nB: My mom does.",
+     opts:["make","to make","making","makes"], a:"makes", n:"Who 當第三人稱單數主詞，動詞加 s"},
+    {q:"He ___ his homework, so he gets in trouble very often.",
+     opts:["don't do","doesn't does","doesn't do","don't does"], a:"doesn't do", n:"第三人稱單數否定：doesn't + 原形動詞"},
+    {q:"Mary: What ___ he do? Sue: He's a doctor.",
+     opts:["is","do","can","does"], a:"does", n:"What does he do?＝問職業的固定問法"},
+    {q:"A: What time is it? B: It's 7:30 a.m. It's time ___ up.",
+     opts:["get","getting","to get","gets"], a:"to get", n:"It's time to V＝該做某事的時間了"},
+    {q:"Ben: Does Jane have to leave Taipei? Linda: Yes, she ___.",
+     opts:["does","has","have","is"], a:"does", n:"用助動詞 does 回答 does 的問句"},
+    {q:"A: I can't play basketball with you this afternoon.\nB: ___\nA: Because I have two tests tomorrow.",
+     opts:["Where are you?","What is it?","How much?","How come?"], a:"How come?",
+     n:"How come?＝為什麼？對應 A 接著說明原因"},
+    {q:"Tim: Doesn't Amy like math class? May: ___",
+     opts:["No, she does.","No, she doesn't.","Yes, she likes.","Yes, she likes English class."],
+     a:"No, she doesn't.", n:"否定問句的簡答要用 No, she doesn't.（不能說 Yes, she likes）"},
+    {q:"A: What time ___ Mrs. Wang come to the office?\nB: I don't know.",
+     opts:["do","are","does","is"], a:"does", n:"Mrs. Wang 是第三人稱單數，疑問句用 does"}
+  ]
+};
+
+const STALL7 = {
+  id:'stall7', emoji:'🎣', title:'第七攤：撈金魚攤',
+  desc:'20題問句字＋日常用語綜合題，手要穩，腦也要穩！',
+  questions:[
+    {q:"A: ___ is your mom? B: She's fifty-eight years old.",
+     opts:["How old","How many","How much","How about"], a:"How old", n:"問年齡用 How old"},
+    {q:"Mrs. Li planned to make a big dinner for her family, so she went to the traditional（傳統的）___ to buy some food this morning.",
+     opts:["fire station","hospital","hotel","market"], a:"market", n:"傳統市場（market）才能買菜"},
+    {q:"The ___ is filled with students before the final exam.",
+     opts:["zoo","sport","movie theater","library"], a:"library", n:"考前學生擠滿的地方是圖書館"},
+    {q:"Bob fell off the bike and broke his leg. His mother sent him to the ___ right away.",
+     opts:["bakery","hospital","museum","fire station"], a:"hospital", n:"摔斷腿要送醫院"},
+    {q:"The woman is so worried about her son. He is two years old, but he ___ to speak yet.",
+     opts:["can","can't","isn't able","not able"], a:"isn't able",
+     n:"空格後面已經有 to speak，要選能接 to V 的 isn't able（can/can't 不能接 to）"},
+    {q:"A: Could you go to the ___ to mail the letter for me? B: Sure.",
+     opts:["factory","post office","police station","zoo"], a:"post office", n:"寄信要去郵局"},
+    {q:"Sam: Dogs are ___-blind.\nJane: Really? So, dogs can only see black and white?\nSam: More than that. They can also see gray, yellow, red, and blue.",
+     opts:["color","orange","zero","flute"], a:"color", n:"color-blind＝色盲，固定用法"},
+    {q:"There are a ___ students in this summer camp—fifty girls and fifty boys.",
+     opts:["dozen","hundred","zero","thousand"], a:"hundred", n:"50+50=100，a hundred students"},
+    {q:"Ben: ___ do I need to pay for the pen? Boss: It's NT$20.",
+     opts:["What","How often","How many","How much"], a:"How much", n:"問價錢用 How much"},
+    {q:"Gina and I are ___, but we seldom talk at school. We don't know each other very well.",
+     opts:["strangers","classmates","kings","teenagers"], a:"classmates", n:"在學校但不熟，是同班同學（classmates）"},
+    {q:"I drank too much water, so I need to go to the ___. Do you know where it is?",
+     opts:["restaurant","school","restroom","picnic"], a:"restroom", n:"想上廁所要去 restroom"},
+    {q:"My favorite sports are tennis and ___. I play them every Sunday morning.",
+     opts:["piano","badminton","card","town"], a:"badminton", n:"要跟 tennis 一樣是運動，選 badminton"},
+    {q:"Don't ___ your car here, or you will get a ticket.",
+     opts:["park","shop","use","act"], a:"park", n:"不要在這裡『停車』(park)，否則會被罰單"},
+    {q:"A: Your father looks very young. ___ his age?\nB: He's seventy years old.",
+     opts:["How much is","How old is","How's","What's"], a:"How old is", n:"問年齡用 How old is"},
+    {q:"A: Where is Gary? B: There ___.",
+     opts:["comes he","he comes","come he","he come"], a:"he comes", n:"There/Here + 代名詞主詞 + 動詞，不倒裝：There he comes."},
+    {q:"A: Who is your sister? B: The one ___ glasses.",
+     opts:["by","at","with","for"], a:"with", n:"the one with glasses＝戴眼鏡的那個人"},
+    {q:"Tim can ___ very well, but I can't.",
+     opts:["swim","swims","swam","swimming"], a:"swim", n:"can 後面接原形動詞"},
+    {q:"Tony: Jack and I are going ___ this weekend. Do you want to go with us?\nMatt: Sorry, I can't.",
+     opts:["camp","camps","to camping","camping"], a:"camping", n:"go camping＝去露營，go + Ving 表示去做某休閒活動"},
+    {q:"A: Look! This is my new guitar. B: How ___!",
+     opts:["it is cool","is it cool","cool it is","cool is it"], a:"cool it is", n:"感嘆句：How + 形容詞 + 主詞 + 動詞"},
+    {q:"A: ___ is the post office from here? B: About two blocks.",
+     opts:["How far","How much","How long","How old"], a:"How far", n:"問距離用 How far"}
+  ]
+};
+
+const BOSS2 = {
+  id:'boss2', isBoss:true, emoji:'🐲', title:'隱藏關二：龍王的終極考驗',
+  desc:'16題會考模式進階題，同句型再拉高難度，挑戰看看！',
+  questions:[
+    {q:"The twins are so much alike that even their close friends can't tell ___ apart at parties.",
+     opts:["they","them","their","theirs"], a:"them", n:"tell sb apart＝認出某人，受格用 them"},
+    {q:"Neither the manager nor his assistants ___ available to answer your question right now.",
+     opts:["is","are","was","be"], a:"are", n:"neither A nor B，動詞要和最接近的 B（assistants，複數）一致"},
+    {q:"Brenda hardly eats ___ vegetables, so her doctor suggests she change her diet soon.",
+     opts:["many","much","any","some"], a:"any", n:"hardly（幾乎不）帶有否定語氣，後面常接 any"},
+    {q:"A: I heard you failed the test. ___?\nB: Because I was too nervous to think clearly.",
+     opts:["How come","How long","How often","How far"], a:"How come", n:"How come?＝為什麼？常用來追問原因"},
+    {q:"Look at that painting! How ___!",
+     opts:["amazing it is","is it amazing","amazing is it","it is amazing"], a:"amazing it is",
+     n:"感嘆句固定詞序：How + 形容詞 + 主詞 + 動詞"},
+    {q:"A: Where's your little brother?\nB: There ___, riding his new bike around the yard.",
+     opts:["he goes","goes he","go he","he go"], a:"he goes", n:"There/Here + 代名詞主詞 + 動詞，不倒裝"},
+    {q:"Because of the heavy rain, the coach decided not to let the kids ___ outside; instead, they took turns ___ board games in the gym.",
+     opts:["play; playing","to play; play","play; to play","playing; play"], a:"play; playing",
+     n:"let sb + 原形動詞；take turns + Ving"},
+    {q:"My grandmother isn't ___ to climb stairs anymore, so we moved her bedroom downstairs.",
+     opts:["can","able","able to","can to"], a:"able to", n:"be able to + 原形動詞，表示『有能力』"},
+    {q:"Jason's latest novel, The Lost Coin, ___ a thrilling story about two thieves and a magic key.",
+     opts:["tell","tells","telling","to tell"], a:"tells", n:"書名是單數主詞，動詞用 tells"},
+    {q:"I'm allergic to seafood, so I'd rather not have ___ shrimp in my soup, thanks.",
+     opts:["some","any","many","a few"], a:"any", n:"否定／委婉拒絕語氣（I'd rather not）後面用 any"},
+    {q:"Dennis didn't get the job, ___ he showed up an hour late for the interview.",
+     opts:["so","but","because","or"], a:"because", n:"原因句：因為他面試遲到了一小時"},
+    {q:"A: This soup tastes great! What did you put in it?\nB: Just a little salt and ___ of pepper.",
+     opts:["a few","a little","many","a piece"], a:"a little", n:"pepper（胡椒）不可數，用 a little"},
+    {q:"Vincent is the ___ player on the team who hasn't missed a single practice this year.",
+     opts:["only","other","another","others"], a:"only", n:"the only + 名詞＝唯一的…"},
+    {q:"A: How far is the night market from your house?\nB: ___",
+     opts:["About two kilometers.","Twice a week.","Since last year.","By bus."], a:"About two kilometers.",
+     n:"How far 問距離，要用距離單位回答"},
+    {q:"We'd already finished dinner by the time Dad got home, so he had to heat ___ up for himself.",
+     opts:["it","one","them","some"], a:"it", n:"dinner 是單數，指『它』用 it"},
+    {q:"A: Whose umbrella is this, yours or your sister's?\nB: It's ___. Mine is the blue one.",
+     opts:["my sister","my sister's","my sisters","sister's"], a:"my sister's", n:"問『誰的』，回答要用所有格 's"}
+  ]
+};
+
+const ROUNDS = [STALL1, STALL2, STALL3, BOSS, STALL4, STALL5, STALL6, STALL7, BOSS2];
+const VENDOR_EMOJI = { stall1:'🧑‍🍳', stall2:'🧑‍🍳', stall3:'🕵️', boss:'👨‍🍳',
+  stall4:'🤹', stall5:'🙂', stall6:'🥁', stall7:'🐟', boss2:'🐲' };
+
+/* ===================== 遊戲狀態與邏輯 ===================== */
+let roundIdx = 0;
+let order = [];          // 本輪題目（洗牌後）的索引
+let qi = 0;              // 本輪目前第幾題
+let lives = 3;
+let combo = 0, bestComboRound = 0, bestComboTotal = 0;
+let coinsRound = 0, coinsTotal = 0;
+let correctRound = 0;
+let totalAnsweredRound = 0;
+let wrongLog = [];        // {q, correct, note}
+let answeredThisQ = false;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+document.getElementById('btnStart').addEventListener('click', ()=>{
+  roundIdx = 0; coinsTotal = 0; bestComboTotal = 0; wrongLog = [];
+  startRoundIntro();
+});
+
+document.querySelectorAll('.jump-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    roundIdx = parseInt(btn.dataset.round, 10);
+    coinsTotal = 0; bestComboTotal = 0; wrongLog = [];
+    startRoundIntro();
+  });
+});
+
+function startRoundIntro(){
+  const r = ROUNDS[roundIdx];
+  document.getElementById('riEmoji').textContent = r.emoji;
+  document.getElementById('riTitle').textContent = r.title;
+  document.getElementById('riDesc').textContent = r.desc;
+  show('screen-roundintro');
+}
+
+document.getElementById('btnRoundStart').addEventListener('click', startRound);
+
+function startRound(){
+  const r = ROUNDS[roundIdx];
+  order = shuffle(r.questions.map((_,i)=>i));
+  qi = 0; lives = 3; combo = 0; bestComboRound = 0;
+  coinsRound = 0; correctRound = 0; totalAnsweredRound = 0;
+  document.getElementById('roundTag').textContent = r.emoji + ' ' + r.title;
+  document.getElementById('bossHpWrap').style.display = r.isBoss ? 'block' : 'none';
+  if(r.isBoss){
+    document.getElementById('bossHpText').textContent = r.questions.length + '/' + r.questions.length;
+    document.getElementById('bossHpFill').style.width = '100%';
+  }
+  show('screen-game');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answeredThisQ = false;
+  const r = ROUNDS[roundIdx];
+  const q = r.questions[order[qi]];
+  document.getElementById('qNum').textContent = '第 ' + (qi+1) + ' / ' + r.questions.length + ' 題';
+  document.getElementById('qText').innerHTML = formatQ(q.q);
+  document.getElementById('feedback').classList.remove('show');
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btnNext').style.display = 'none';
+  document.getElementById('vendor').textContent = VENDOR_EMOJI[r.id] || '🧑‍🍳';
+  document.getElementById('vendor').classList.remove('bump');
+  renderHud();
+
+  const optsShuffled = shuffle(q.opts);
+  const wrap = document.getElementById('optionsWrap');
+  wrap.innerHTML = '';
+  const tags = ['A','B','C','D'];
+  optsShuffled.forEach((opt,i)=>{
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.innerHTML = '<span class="tag">(' + tags[i] + ')</span><span>' + escapeHtml(opt) + '</span>';
+    div.addEventListener('click', ()=> onAnswer(div, opt, q));
+    wrap.appendChild(div);
+  });
+}
+
+function formatQ(text){
+  const escaped = escapeHtml(text);
+  return escaped.replace(/_{2,}/, '<span class="blank"></span>');
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderHud(){
+  document.getElementById('livesDisplay').textContent = '❤️'.repeat(Math.max(lives,0)) + '🖤'.repeat(3-Math.max(lives,0));
+  document.getElementById('comboDisplay').textContent = combo>=2 ? ('🔥 連擊 x' + combo) : '';
+  document.getElementById('coinsDisplay').textContent = '🪙 ' + (coinsTotal + coinsRound);
+}
+
+function onAnswer(el, chosen, q){
+  if(answeredThisQ) return;
+  answeredThisQ = true;
+  totalAnsweredRound++;
+  const allOpts = document.querySelectorAll('#optionsWrap .opt');
+  allOpts.forEach(o=>o.classList.add('disabled'));
+
+  const isCorrect = (chosen === q.a);
+  const vendor = document.getElementById('vendor');
+
+  if(isCorrect){
+    el.classList.add('correct');
+    combo++; bestComboRound = Math.max(bestComboRound, combo);
+    bestComboTotal = Math.max(bestComboTotal, combo);
+    const bonus = combo>=3 ? 5 : 0;
+    coinsRound += 10 + bonus;
+    correctRound++;
+    vendor.textContent = '😄';
+    document.getElementById('feedback').innerHTML = '<b>答對了！</b> ' + escapeHtml(q.n);
+  } else {
+    el.classList.add('wrong');
+    allOpts.forEach(o=>{
+      const txt = o.querySelector('span:last-child').textContent;
+      if(txt === q.a){
+        o.classList.add('correct');
+      }
+    });
+    combo = 0; lives--;
+    vendor.textContent = '😵';
+    document.getElementById('feedback').innerHTML = '<b>正確答案：' + escapeHtml(q.a) + '</b><br>' + escapeHtml(q.n);
+    wrongLog.push({q:q.q, a:q.a, n:q.n, round:ROUNDS[roundIdx].title});
+  }
+  vendor.classList.add('bump');
+  document.getElementById('feedback').classList.add('show');
+  renderHud();
+
+  if(ROUNDS[roundIdx].isBoss){
+    const total = ROUNDS[roundIdx].questions.length;
+    const remaining = Math.max(total - (qi+1), 0);
+    document.getElementById('bossHpText').textContent = remaining + '/' + total;
+    document.getElementById('bossHpFill').style.width = (remaining/total*100) + '%';
+  }
+
+  if(lives <= 0){
+    setTimeout(()=>{
+      document.getElementById('failDesc').textContent =
+        '在「' + ROUNDS[roundIdx].title + '」用完了三條命，重新逛一次這攤，把錯的句型記熟再來挑戰！';
+      show('screen-fail');
+    }, 1100);
+    return;
+  }
+  document.getElementById('btnNext').style.display = 'block';
+}
+
+document.getElementById('btnNext').addEventListener('click', ()=>{
+  qi++;
+  const r = ROUNDS[roundIdx];
+  if(qi >= r.questions.length){
+    finishRound();
+  } else {
+    renderQuestion();
+  }
+});
+
+function finishRound(){
+  coinsTotal += coinsRound;
+  const r = ROUNDS[roundIdx];
+  document.getElementById('clearTitle').textContent =
+    (r.isBoss ? '老闆認輸了！🎊' : r.title + ' 過關！');
+  document.getElementById('clearScore').textContent = coinsRound;
+  document.getElementById('clearAcc').textContent = Math.round(correctRound/totalAnsweredRound*100) + '%';
+  document.getElementById('clearBest').textContent = 'x' + Math.max(bestComboRound,1);
+  show('screen-clear');
+}
+
+document.getElementById('btnNextRound').addEventListener('click', ()=>{
+  roundIdx++;
+  if(roundIdx >= ROUNDS.length){
+    showFinal();
+  } else {
+    startRoundIntro();
+  }
+});
+
+document.getElementById('btnRetryRound').addEventListener('click', startRound);
+document.getElementById('btnBackHomeFromFail').addEventListener('click', ()=>{
+  show('screen-start');
+});
+
+function showFinal(){
+  const totalQ = ROUNDS.reduce((sum,rd)=>sum+rd.questions.length,0);
+  const totalCorrect = totalQ - wrongLog.length;
+  document.getElementById('finalCoins').textContent = coinsTotal;
+  document.getElementById('finalAcc').textContent = Math.round(totalCorrect/totalQ*100) + '%';
+  document.getElementById('finalBest').textContent = 'x' + Math.max(bestComboTotal,1);
+
+  const list = document.getElementById('reviewList');
+  list.innerHTML = '';
+  if(wrongLog.length===0){
+    list.innerHTML = '<p style="text-align:center;color:#9aa1c2;">太強了，這次全對，沒有錯題！</p>';
+  } else {
+    wrongLog.forEach(w=>{
+      const div = document.createElement('div');
+      div.className = 'review-item';
+      div.innerHTML = '<div class="rq">' + escapeHtml(w.q) + '</div>' +
+                       '<div class="ra">正確答案：' + escapeHtml(w.a) + '</div>' +
+                       '<div class="rn">' + escapeHtml(w.n) + '</div>';
+      list.appendChild(div);
+    });
+  }
+  document.getElementById('reviewList').style.display = 'none';
+  document.getElementById('reviewToggle').textContent = '▾ 查看錯題複習（共 ' + wrongLog.length + ' 題）';
+  show('screen-final');
+}
+
+document.getElementById('reviewToggle').addEventListener('click', ()=>{
+  const list = document.getElementById('reviewList');
+  const open = list.style.display !== 'none';
+  list.style.display = open ? 'none' : 'block';
+  document.getElementById('reviewToggle').textContent = (open ? '▾ 查看錯題複習' : '▴ 收合錯題複習') + '（共 ' + wrongLog.length + ' 題）';
+});
+
+document.getElementById('btnRestartAll').addEventListener('click', ()=>{
+  show('screen-start');
+});
+
+</script>
+</body>
+</html>
